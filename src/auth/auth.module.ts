@@ -5,8 +5,20 @@ import { SequelizeModule } from '@nestjs/sequelize';
 import { Auth } from './model/auth.entity';
 
 @Module({
-  imports: [SequelizeModule.forFeature([Auth])],
+  imports: [
+    TypeOrmModule.forFeature([User]),
+    EmailModule,
+    JwtModule.registerAsync({
+      imports: [ConfigModule],
+      useFactory: (config: ConfigService) => ({
+        secret: config.get('JWT_SECRET'),
+        signOptions: { expiresIn: '7d' },
+      }),
+      inject: [ConfigService],
+    }),
+  ],
   controllers: [AuthController],
   providers: [AuthService],
+  exports: [JwtModule],
 })
 export class AuthModule {}

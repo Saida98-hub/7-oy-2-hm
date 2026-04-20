@@ -6,39 +6,59 @@ import { Article } from './model/article.entity';
 
 @Injectable()
 export class ArticleService {
-  constructor(@InjectModel(Article) private articleModel: typeof Article){}
-  async create(createArticleDto: CreateArticleDto) {
-    return await this.articleModel.create({...createArticleDto})
+  constructor(
+    @InjectRepository(Article)
+    private articleRepository: Repository<Article>,
+    @InjectRepository(User)
+    private userRepository: Repository<User>,
+  ) {}
+
+  async create(createArticleDto: CreateArticleDto, userId: number) {
+    const user = await this.userRepository.findOne({ where: { id: userId } });
+
+    if (!user) {
+      throw new NotFoundException('Foydalanuvchi topilmadi');
+    }
+
+    const article = this.articleRepository.create({
+      title: createArticleDto.title,
+      content: createArticleDto.content,
+      user,
+    });
+
+    await this.articleRepository.save(article);
+
+    return { message: 'Maqola yaratildi', article };
   }
 
-  async findAll(): Promise<Article[]> {
-    return await this.articleModel.findAll()
+  async findAll() {
+    return this.articleRepository.find({ relations: ['user'] });
   }
 
-  async findOne(id: number): Promise<Article> {
-    const foundedArticle = await this.articleModel.findByPk(id)
+  async findOne(id: number) {
+    const article = await this.articleRepository.findOne({
+      where: { id },
+      relations: ['user'],
+    });
 
-    if(!foundedArticle) throw new NotFoundException("Article not found")
+    if (!article) {
+      throw new NotFoundException('Maqola topilmadi');
+    }
 
-    return foundedArticle
+    return article;
   }
 
-  async update(id: number, updateArticleDto: UpdateArticleDto): Promise<{message: string}> {
-    const foundedArticle = await this.articleModel.findByPk(id)
+  async update(id: number, updateArticleDto: UpdateArticleDto, userId: number) {
+    const article = await this.findOne(id);
 
-    if(!foundedArticle) throw new NotFoundException("Article not found")
+    if (article.user.id !== userId) {
+      throw new ForbiddenException("Siz bu maqolani o'zgartira olmaysiz");
+    }
 
-      await this.articleModel.update(updateArticleDto, {where: {id}, returning: true})
+    await this.articleRepository.update(id, {
+      title: updateArticleDto.title,
+      content: updateArticleDto.content,
+    });
 
-    return {message: "Updated"}
+    return { message: 'Maqola yangilandi' };
   }
-
-  async remove(id: number): Promise<{message: string}> {
-    const foundedArticle = await this.articleModel.findByPk(id)
-
-    if(!foundedArticle) throw new NotFoundException("Article not found")
-
-      await this.articleModel.destroy({where: {id}})
-    return {message: "Deleted"}
-  }
-}
