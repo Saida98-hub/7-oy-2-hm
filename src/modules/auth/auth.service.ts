@@ -20,7 +20,7 @@ export class AuthService {
     this.nodemailer = nodemailer.createTransport({
       service: "gmail",
       auth: {
-        user: "ijumanazarov631@gmail.com",
+        user: "aliyarakhmanova5@gmail.com",
         pass: process.env.APP_KEY,
       },
     });
@@ -41,7 +41,7 @@ export class AuthService {
 
     const time = Date.now() + 120000
 
-    await this.nodemailer.sendMail({ from: "ijumanazarov631@gmail.com", to: email, subject: "lesson", text: "test content", html: `<b>${otp}</b>` })
+    await this.nodemailer.sendMail({ from: "aliyarakhmanova5@gmail.com", to: email, subject: "lesson", text: "test content", html: `<b>${otp}</b>` })
 
     const user = this.authRepo.create({ username, email, password: hashPassword, otp, otpTime: time })
     await this.authRepo.save(user)
@@ -92,7 +92,7 @@ export class AuthService {
 
       const time = Date.now() + 120000
 
-      await this.nodemailer.sendMail({ from: "ijumanazarov631@gmail.com", to: email, subject: "lesson", text: "test content", html: `<b>${otp}</b>` })
+      await this.nodemailer.sendMail({ from: "aliyarakhmanova5@gmail.com", to: email, subject: "lesson", text: "test content", html: `<b>${otp}</b>` })
 
       await this.authRepo.update(foundedUser.id, { otp, otpTime: time })
 
