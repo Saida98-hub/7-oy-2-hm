@@ -1,27 +1,33 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { SequelizeModule } from '@nestjs/sequelize';
-import { AuthModule } from './auth/auth.module';
-import { ArticleModule } from './article/article.module';
-import { Auth } from './auth/model/auth.entity';
-import { Article } from './article/model/article.entity';
-
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { AuthModule } from './modules/auth/auth.module';
+import { ArticleModule } from './modules/article/article.module';
+import { Auth } from './modules/auth/entities/auth.entity';
+import { Article } from './modules/article/entities/article.entity';
+import { TagModule } from './modules/tag/tag.module';
+import { Tag } from './modules/tag/entities/tag.entity';
+import { ArticleImageModule } from './modules/article_image/article_image.module';
+import { ArticleImage } from './modules/article_image/entities/article_image.entity';
+  
 @Module({
   imports: [
-    ConfigModule.forRoot({envFilePath: '.env', isGlobal: true}),
-    SequelizeModule.forRoot({
-      dialect: 'postgres',
+    ConfigModule.forRoot({ envFilePath: '.env', isGlobal: true }),
+    TypeOrmModule.forRoot({
+      type: 'postgres',
       host: String(process.env.DB_HOST),
       port: 5432,
       username: String(process.env.DB_USERNAME),
       database: String(process.env.DB_NAME),
       password: String(process.env.DB_PASSWORD),
-      autoLoadModels: true,
+      entities: [Auth, Article,Tag, ArticleImage],
       synchronize: true,
-      logging: false
+      logging: false,
     }),
     AuthModule,
-    ArticleModule
+    ArticleModule,
+    TagModule,
+    ArticleImageModule
   ],
   controllers: [],
   providers: [],
